@@ -21,6 +21,7 @@ struct Tile {
 struct Player {
     Tile hand[TILE_SIZE];
     int currentHandSize;
+    bool hasOpened;
 };
 
 struct Combination {
@@ -75,6 +76,11 @@ int handPoints(const Player& player);
 
 bool drawOneTile(Player& player, Tile* pile, int& pileSize);
 int findWinnerByLowestPoints(Player* players, int playersCount);
+
+int combinationPoints(const Tile* tiles, int size);
+
+void addToHandEnd(Player& player, const Tile& tile);
+void removeLastCombinations(Table& table, int count);
 
 // ------------------------------------------------ main() Function ------------------------------------------------
 
@@ -236,6 +242,7 @@ void seedTilesToPlayers(Player* players, int playersCount, Tile* pile, int& pile
     for (int i = 0; i < playersCount; i++)
     {
         players[i].currentHandSize = 0;
+        players[i].hasOpened = false;
     }
 
     for (int i = 0; i < HAND_SIZE; i++)
@@ -497,6 +504,12 @@ void addCombinationToTable(Table& table, const Tile* tiles, int size) {
 void printTable(const Table& table) {
     cout << endl << "TABLE:" << endl;
 
+    if (table.combinationsCount == 0) 
+    {
+        cout << "(empty)" << endl;
+        return;
+    }
+
     for (int i = 0; i < table.combinationsCount; i++) 
     {
         cout << i << ") ";
@@ -578,83 +591,203 @@ void removeChosenFromHand(Player& player, int* chosenIndexes, int chosenCount) {
 
 bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
     cout << endl << "Player " << playerNumber << " turn." << endl;
-    cout << "1) Play a new combination" << endl;
-    cout << "2) Draw a tile (end turn)" << endl;
-    cout << "Choose: ";
 
-    int choice;
-    cin >> choice;
-
-    if (cin.fail()) 
+    if (player.hasOpened)
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
-        return false;
+        cout << "1) Play a new combination" << endl;
+        cout << "2) Draw a tile (end turn)" << endl;
+        cout << "Choose: ";
+
+        int choice;
+        cin >> choice;
+
+        if (cin.fail()) 
+        {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Invalid input." << endl;
+            return false;
+        }
+
+        if (choice == 2) 
+        {
+            return false;
+        }
+        if (choice != 1) 
+        {
+            cout << "Invalid choice." << endl;
+            return false;
+        }
+
+        cout << endl << "Choose tiles to form a combination." << endl;
+        printHandWithIndexes(player);
+
+        cout << "How many tiles in the combination?" << endl;
+        int chosenCount;
+        cin >> chosenCount;
+
+        if (cin.fail()) 
+        {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Invalid input." << endl;
+            return false;
+        }
+
+        if (chosenCount < 3 || chosenCount > HAND_SIZE || chosenCount > player.currentHandSize) 
+        {
+            cout << "Invalid count." << endl;
+            return false;
+        }
+
+        int chosenIndexes[HAND_SIZE];
+        Tile chosenTiles[HAND_SIZE];
+
+        cout << "Enter " << chosenCount << " indexes: ";
+
+        if (!readChosenIndexes(chosenIndexes, chosenCount, player.currentHandSize)) 
+        {
+            cout << "Invalid indexes." << endl;
+            return false;
+        }
+
+        buildChosenTiles(player, chosenIndexes, chosenCount, chosenTiles);
+
+        if (!isValidCombination(chosenTiles, chosenCount))
+        {
+            cout << "Invalid combination!" << endl;
+            return false;
+        }
+
+        cout << "Valid combination! Adding to table..." << endl;
+        addCombinationToTable(table, chosenTiles, chosenCount);
+        removeChosenFromHand(player, chosenIndexes, chosenCount);
+
+        return true;
     }
 
-    if (choice == 2)
+    cout << "You have NOT opened yet. You must place combinations with total >= 30 points this turn." << endl;
+
+    int turnSum = 0;
+
+    int startCombinationsCount = table.combinationsCount;
+
+    Tile takenTiles[HAND_SIZE];
+    int takenCount = 0;
+
+    while (true)
     {
-        return false;
+        cout << endl << "Current placed points this turn: " << turnSum << " / 30" << endl;
+        cout << "1) Add a combination" << endl;
+        cout << "2) Draw a tile (give up opening and end turn)" << endl;
+        cout << "Choose: ";
+
+        int choice;
+        cin >> choice;
+
+        if (cin.fail()) 
+        {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Invalid input." << endl;
+
+            removeLastCombinations(table, table.combinationsCount - startCombinationsCount);
+
+            for (int i = 0; i < takenCount; i++)
+            {
+                addToHandEnd(player, takenTiles[i]);
+            }
+
+            return false;
+        }
+
+        if (choice == 2) 
+        {
+            removeLastCombinations(table, table.combinationsCount - startCombinationsCount);
+
+            for (int i = 0; i < takenCount; i++) 
+            {
+                addToHandEnd(player, takenTiles[i]);
+            }
+            
+            return false;
+        }
+
+        if (choice != 1) 
+        {
+            cout << "Invalid choice." << endl;
+            continue;
+        }
+
+        cout << endl << "Choose tiles to form a combination." << endl;
+        printHandWithIndexes(player);
+
+        cout << "How many tiles in the combination?" << endl;
+        int chosenCount;
+        cin >> chosenCount;
+
+        if (cin.fail()) 
+        {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "Invalid input." << endl;
+            continue;
+        }
+
+        if (chosenCount < 3 || chosenCount > HAND_SIZE || chosenCount > player.currentHandSize) 
+        {
+            cout << "Invalid count." << endl;
+            continue;
+        }
+
+        int chosenIndexes[HAND_SIZE];
+        Tile chosenTiles[HAND_SIZE];
+
+        cout << "Enter " << chosenCount << " indexes: ";
+
+        if (!readChosenIndexes(chosenIndexes, chosenCount, player.currentHandSize)) 
+        {
+            cout << "Invalid indexes." << endl;
+            continue;
+        }
+
+        buildChosenTiles(player, chosenIndexes, chosenCount, chosenTiles);
+
+        if (!isValidCombination(chosenTiles, chosenCount)) 
+        {
+            cout << "Invalid combination!" << endl;
+            continue;
+        }
+
+        int pts = combinationPoints(chosenTiles, chosenCount);
+        cout << "This combination points: " << pts << endl;
+
+        for (int i = 0; i < chosenCount; i++) 
+        {
+            if (takenCount < HAND_SIZE) 
+            {
+                takenTiles[takenCount++] = chosenTiles[i];
+            }
+        }
+
+        addCombinationToTable(table, chosenTiles, chosenCount);
+        removeChosenFromHand(player, chosenIndexes, chosenCount);
+
+        turnSum += pts;
+
+        if (turnSum >= 30) 
+        {
+            player.hasOpened = true;
+            cout << "You have opened (>=30)! Turn ends." << endl;
+            return true;
+        }
     }
-
-    if (choice != 1) 
-    {
-        cout << "Invalid choice." << endl;
-        return false;
-    }
-
-    cout << endl << "Player " << playerNumber << ", choose tiles to form a combination." << endl;
-    printHandWithIndexes(player);
-
-    cout << "How many tiles in the combination? " << endl;
-    int chosenCount;
-    cin >> chosenCount;
-
-    if (cin.fail()) 
-    {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input.\n";
-        return false;
-    }
-
-    if (chosenCount < 3 || chosenCount > HAND_SIZE || chosenCount > player.currentHandSize) 
-    {
-        cout << "Invalid count." << endl;
-        return false;
-    }
-
-    int chosenIndexes[HAND_SIZE];
-    Tile chosenTiles[HAND_SIZE];
-
-    cout << "Enter " << chosenCount << " indexes: ";
-
-    if (!readChosenIndexes(chosenIndexes, chosenCount, player.currentHandSize)) 
-    {
-        cout << "Invalid indexes (out of range, duplicates, or bad input)." << endl;
-        return false;
-    }
-
-    buildChosenTiles(player, chosenIndexes, chosenCount, chosenTiles);
-
-    if (!isValidCombination(chosenTiles, chosenCount)) 
-    {
-        cout << "Invalid combination!" << endl;
-        return false;
-    }
-
-    cout << "Valid combination! Adding to table..." << endl;
-    addCombinationToTable(table, chosenTiles, chosenCount);
-    removeChosenFromHand(player, chosenIndexes, chosenCount);
-
-    return true;
 }
 
 int tilePoints(const Tile& tile) {
     if (isJoker(tile)) 
-    { 
-        return 30; 
+    {
+        return 30;
     }
 
     return tile.value;
@@ -671,19 +804,18 @@ int handPoints(const Player& player) {
     return sum;
 }
 
-bool drawOneTile(Player& player, Tile* pile, int& pileSize) 
-{
-    Tile drawn;
+bool drawOneTile(Player& player, Tile* pile, int& pileSize) {
+    Tile drawnTile;
 
-    if (!drawFromPile(pile, pileSize, &drawn)) 
+    if (!drawFromPile(pile, pileSize, &drawnTile)) 
     {
         return false;
     }
 
-    addToHand(&player, drawn);
+    addToHand(&player, drawnTile);
 
     cout << "You drew: ";
-    printTile(drawn);
+    printTile(drawnTile);
     cout << endl;
 
     return true;
@@ -703,4 +835,37 @@ int findWinnerByLowestPoints(Player* players, int playersCount) {
         }
     }
     return bestIndex;
+}
+
+int combinationPoints(const Tile* tiles, int size) {
+    int sum = 0;
+
+    for (int i = 0; i < size; i++) 
+    {
+        sum += tilePoints(tiles[i]);
+    }
+    return sum;
+}
+
+void addToHandEnd(Player& player, const Tile& tile) {
+    if (player.currentHandSize >= TILE_SIZE) 
+    {
+        return;
+    }
+
+    player.hand[player.currentHandSize++] = tile;
+}
+
+void removeLastCombinations(Table& table, int count) {
+    if (count <= 0) 
+    {
+        return;
+    }
+
+    if (count > table.combinationsCount) 
+    {
+        count = table.combinationsCount;
+    }
+
+    table.combinationsCount -= count;
 }

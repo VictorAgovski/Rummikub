@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Rummikub/Rummikub.vcxproj" />
+  <Project Path="Rummikub/Rummikub.vcxproj" Id="629f7e05-a026-4197-9360-f3008d49be6a" />
 </Solution>
