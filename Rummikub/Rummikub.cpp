@@ -9,6 +9,14 @@ const int PILE_SIZE = 106;
 const int HAND_SIZE = 14;
 const int MAX_PLAYERS = 4;
 
+
+const char* INVALID_INPUT = "Invalid input.";
+const char* INVALID_CHOICE = "Invalid choice.";
+const char* INVALID_COUNT = "Invalid count.";
+const char* INVALID_HAND_INDEX = "Invalid hand index.";
+const char* INVALID_TABLE_INDEX = "Invalid table index.";
+const char* TABLE_EMPTY = "Table is empty.";
+
 // ------------------------------------------------ Classes ------------------------------------------------
 
 enum Color { ORANGE, RED, BLUE, BLACK };
@@ -103,6 +111,9 @@ void removeEmptyCombinations(Table& table);
 bool tryPlayNewCombination(Player& player, Table& table, int playerNumber);
 bool tryRearrangeTurn(Player& player, Table& table, int playerNumber);
 
+const char* ansiColor(Color c);
+const char* ansiReset();
+
 // ------------------------------------------------ main() Function ------------------------------------------------
 
 int main()
@@ -128,9 +139,12 @@ int main()
     table.combinationsCount = 0;
 
     bool gameOver = false;
+    int roundCounter = 1;
 
     while (!gameOver) 
     {
+        cout << endl << "\033[92m" << "========== ROUND " << roundCounter++ << " ==========" << "\033[0m" << endl;
+
         for (int i = 0; i < playersCount; i++) {
             cout << endl << "==============================" << endl;
             printTable(table);
@@ -293,12 +307,18 @@ char colorToChar(Color color) {
 }
 
 void printTile(const Tile& tile) {
-    if (tile.value == 0) {
+    cout << ansiColor(tile.color);
+
+    if (tile.value == 0) 
+    {
         cout << "[J-" << colorToChar(tile.color) << "]";
     }
-    else {
+    else 
+    {
         cout << "[" << tile.value << "-" << colorToChar(tile.color) << "]";
     }
+
+    cout << ansiReset();
 }
 
 void printHand(const Player& player) {
@@ -620,6 +640,9 @@ void removeChosenFromHand(Player& player, int* chosenIndexes, int chosenCount) {
 
 bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
     cout << endl << "Player " << playerNumber << " turn." << endl;
+
+    cout << "Your hand:" << endl;
+    printHandWithIndexes(player);
 
     if (player.hasOpened)
     {
@@ -1682,4 +1705,21 @@ bool tryRearrangeTurn(Player& player, Table& table, int playerNumber)
             cout << "This action failed. You can try another action, or finish/cancel." << endl;
         }
     }
+}
+
+const char* ansiColor(Color c)
+{
+    switch (c)
+    {
+        case ORANGE: return "\033[93m";
+        case RED:    return "\033[91m";
+        case BLUE:   return "\033[94m";
+        case BLACK:  return "\033[90m";
+    }
+    return "\033[0m";
+}
+
+const char* ansiReset()
+{
+    return "\033[0m";
 }
