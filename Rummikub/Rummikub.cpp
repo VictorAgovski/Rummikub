@@ -5,17 +5,210 @@ using namespace std;
 
 // ------------------------------------------------ Global Constants ------------------------------------------------
 
+// Size
 const int PILE_SIZE = 106;
 const int HAND_SIZE = 14;
 const int MAX_PLAYERS = 4;
+const int MIN_PLAYERS = 2;
 
+const int MAX_TILE_VALUE = 13;
 
-const char* INVALID_INPUT = "Invalid input.";
-const char* INVALID_CHOICE = "Invalid choice.";
-const char* INVALID_COUNT = "Invalid count.";
-const char* INVALID_HAND_INDEX = "Invalid hand index.";
-const char* INVALID_TABLE_INDEX = "Invalid table index.";
-const char* TABLE_EMPTY = "Table is empty.";
+const int HAND_CAPACITY = PILE_SIZE;
+const int MAX_COMBINATIONS = PILE_SIZE;
+const int COMBINATION_CAPACITY = PILE_SIZE;
+
+// Game Rules
+const int OPENING_POINTS = 30;
+
+const int MIN_COMBINATION_SIZE = 3;
+const int MIN_PART_AFTER_SPLIT = 3;
+const int MIN_SPLITTABLE_COMBINATION_SIZE = 6;
+
+const int MAX_GROUP_SIZE = 4;
+const int JOKER_VALUE = 0;
+
+const int COLOR_COUNT = 4;
+const int DUPLICATE_SETS = 2;
+const int MIN_TILE_VALUE = 1;
+
+// Input
+const int CIN_IGNORE_LIMIT = 10000;
+
+// Commands
+const int CANCEL_COMMAND = -1;
+
+// Menu choices - main turn (opened)
+const int TURN_PLAY_NEW = 1;
+const int TURN_EXTEND_EXISTING = 2;
+const int TURN_STEAL_AND_USE = 3;
+const int TURN_REARRANGE = 4;
+const int TURN_DRAW_END = 5;
+
+const int REARRANGE_PLAY_NEW = 1;
+const int REARRANGE_EXTEND_EXISTING = 2;
+const int REARRANGE_STEAL_AND_USE = 3;
+const int REARRANGE_FINISH_COMMIT = 4;
+const int REARRANGE_CANCEL_ROLLBACK = 5;
+
+// Menu choices - opening turn (not opened)
+const int OPEN_TURN_ADD_COMBINATION = 1;
+const int OPEN_TURN_DRAW_GIVE_UP = 2;
+
+// Menu choices - steal usage
+const int STEAL_USE_NEW_COMBINATION = 1;
+const int STEAL_USE_ADD_TO_EXISTING = 2;
+
+// Messages (Errors)
+const char* MSG_INVALID_INPUT = "Invalid input.";
+const char* MSG_INVALID_CHOICE = "Invalid choice.";
+const char* MSG_INVALID_COUNT = "Invalid count.";
+const char* MSG_INVALID_HAND_INDEX = "Invalid hand index.";
+const char* MSG_INVALID_TABLE_INDEX = "Invalid table index.";
+
+// Messages (Info/Prompts)
+const char* MSG_ENTER_PLAYERS = "Enter the number of players (2-4): ";
+const char* MSG_TRY_VALID_PLAYERS = "Try to add a valid number of players.";
+
+const char* MSG_TABLE_HEADER = "TABLE:";
+const char* MSG_TABLE_EMPTY_PRINT = "(empty)";
+
+const char* MSG_NO_COMB_PLAYED_DRAW = "No combination played. You must draw 1 tile.";
+const char* MSG_PILE_EMPTY_ENDS = "Pile is empty. Game ends.";
+
+const char* MSG_OPENING_REQUIRED_PREFIX = "You have NOT opened yet. You must place combinations with total >= ";
+const char* MSG_OPENING_REQUIRED_SUFFIX = " points this turn.";
+
+const char* MSG_INVALID_INDEXES = "Invalid indexes.";
+const char* MSG_INVALID_COMBINATION = "Invalid combination!";
+const char* MSG_COMBINATION_ADDED = "Combination added.";
+
+const char* MSG_STEAL_CANCEL_ROLLBACK = "Steal move cancelled. Everything rolled back.";
+const char* MSG_STEAL_SUCCESS = "Steal move successful.";
+
+const char* MSG_REMAINING_TILES_IN_PILE = "Remaining tiles in pile: ";
+const char* MSG_ROUND_PREFIX = "========== ROUND ";
+const char* MSG_ROUND_SUFFIX = " ==========";
+const char* MSG_PLAYER_NEW_HAND_SUFFIX = " new hand:";
+const char* MSG_PLAYER_WINS_SUFFIX = " wins!";
+const char* MSG_WINNER_PREFIX = "Winner is Player ";
+const char* MSG_WINNER_WITH = " with ";
+const char* MSG_POINTS_SUFFIX = " points.";
+const char* MSG_SEPARATOR_LINE = "==============================";
+
+const char* MSG_PLAYER_TURN_SUFFIX = " turn.";
+const char* MSG_YOUR_HAND = "Your hand:";
+
+const char* MSG_MENU_PLAY_NEW = "1) Play a new combination";
+const char* MSG_MENU_EXTEND_EXISTING = "2) Add a tile to an existing table combination";
+const char* MSG_MENU_STEAL_AND_USE = "3) Steal a tile from table and use it (same turn)";
+const char* MSG_MENU_REARRANGE = "4) Rearrange table (multiple actions, commit/rollback)";
+const char* MSG_MENU_DRAW_END = "5) Draw a tile (end turn)";
+const char* MSG_CHOOSE_PROMPT = "Choose: ";
+
+const char* MSG_OPENING_POINTS_STATUS_PREFIX = "Current placed points this turn: ";
+const char* MSG_SLASH = " / ";
+const char* MSG_OPEN_MENU_ADD_COMBINATION = "1) Add a combination";
+const char* MSG_OPEN_MENU_DRAW_GIVE_UP = "2) Draw a tile (give up opening and end turn)";
+const char* MSG_CHOOSE_TILES_TO_FORM = "Choose tiles to form a combination.";
+const char* MSG_HOW_MANY_TILES_IN_COMB = "How many tiles in the combination?";
+const char* MSG_ENTER_INDEXES_PREFIX = "Enter ";
+const char* MSG_ENTER_INDEXES_SUFFIX = " indexes: ";
+const char* MSG_THIS_COMBINATION_POINTS_PREFIX = "This combination points: ";
+const char* MSG_OPENED_SUCCESS_PREFIX = "You have opened (>=";
+const char* MSG_OPENED_SUCCESS_SUFFIX = ")! Turn ends.";
+
+const char* MSG_YOU_DREW_PREFIX = "You drew: ";
+
+const char* MSG_TABLE_EMPTY_NO_COMB_TO_ADD = "Table is empty. No combinations to add to.";
+const char* MSG_EXTEND_TITLE_PREFIX = "Player ";
+const char* MSG_EXTEND_TITLE_SUFFIX = " - Extend existing combination (add >=1 tiles)";
+const char* MSG_CHOOSE_TABLE_INDEX_PREFIX = "Choose table combination index (0..";
+const char* MSG_CHOOSE_TABLE_INDEX_SUFFIX = "): ";
+const char* MSG_SPACE = " ";
+const char* MSG_COLON = ": ";
+const char* MSG_CLOSING_BRACKET = ") ";
+const char* MSG_NO_TILES_IN_HAND = "You have no tiles.";
+const char* MSG_HOW_MANY_TILES_ADD_PREFIX = "How many tiles do you want to add (1..";
+const char* MSG_STEP_CHOOSE_HAND_TILE_PREFIX = "Choose hand tile index to add (";
+const char* MSG_STEP_CHOOSE_HAND_TILE_MIDDLE = "/";
+const char* MSG_INSERT_POSITION_PREFIX = "Insert position index (0..";
+const char* MSG_INVALID_INSERT_POSITION = "Invalid insert position.";
+const char* MSG_FAILED_REMOVE_TILE_FROM_HAND = "Failed to remove tile from hand.";
+const char* MSG_FAILED_INSERT_TILE_IN_COMB = "Failed to insert tile in combination.";
+const char* MSG_INVALID_AFTER_ADDING_CANCELLED = "Invalid after adding tiles. Move cancelled.";
+const char* MSG_TILES_ADDED_SUCCESS = "Tiles added successfully.";
+
+const char* MSG_ERROR_WRONG_TILES_COUNT_PREFIX = "Error: wrong tiles count: ";
+
+const char* MSG_TABLE_EMPTY_NOTHING_TO_STEAL = "Table is empty. Nothing to steal.";
+const char* MSG_STEAL_TITLE_SUFFIX = " - Steal & use a tile (same turn)";
+const char* MSG_SOURCE_COMBINATION_TILES = "Source combination tiles:";
+const char* MSG_CHOOSE_TILE_INDEX_TO_STEAL_PREFIX = "Choose tile index to steal (0..";
+const char* MSG_INVALID_TILE_INDEX = "Invalid tile index.";
+const char* MSG_FAILED_TO_STEAL = "Failed to steal.";
+const char* MSG_CANT_STEAL_SOURCE_INVALID = "You can't steal that tile: source combination becomes invalid (and can't be split into valid parts).";
+const char* MSG_STOLEN_TILE_PREFIX = "Stolen tile: ";
+
+const char* MSG_USE_STOLEN_TILE_BY = "Use stolen tile by:";
+const char* MSG_USE_STOLEN_OPTION_NEW = "1) Create a NEW combination (using your hand + stolen tile)";
+const char* MSG_USE_STOLEN_OPTION_ADD = "2) Add it to an EXISTING table combination";
+
+const char* MSG_CANT_CREATE_NEW_WITH_STOLEN = "Can't create a new combination with the stolen tile.";
+const char* MSG_ACCORDING_TO_RULES_MUST_ADD_EXISTING = "According to rules, you must add it to an existing table combination (if possible).";
+
+const char* MSG_YOU_CHOSE_STEAL_JOKER = "You chose to steal a JOKER.";
+const char* MSG_STEAL_JOKER_MUST_REPLACE = "To steal it, you must REPLACE it with a tile from your hand so the combination stays valid.";
+const char* MSG_ENTER_HAND_INDEX_REPLACE_JOKER = "Enter hand index to place instead of the Joker (-1 to cancel): ";
+const char* MSG_CANCELLED = "Cancelled.";
+const char* MSG_CANT_REPLACE_JOKER_WITH_JOKER = "You can't replace a Joker with another Joker.";
+const char* MSG_REPLACEMENT_MAKES_INVALID = "Replacement makes the source combination invalid. Can't steal this Joker that way.";
+const char* MSG_JOKER_REPLACED_SUCCESS_PREFIX = "Joker replaced successfully. You stole: ";
+
+const char* MSG_PLAY_NEW_TITLE_SUFFIX = " - Play a NEW combination";
+
+const char* MSG_REARRANGE_HEADER = "=== REARRANGE MODE (multiple actions in one turn) ===";
+const char* MSG_REARRANGE_DESCRIPTION = "You can do multiple actions. At the end, the table must be fully valid.";
+const char* MSG_TEMP_TABLE = "----- TEMP TABLE -----";
+const char* MSG_TEMP_HAND_PREFIX = "----- TEMP HAND (Player ";
+const char* MSG_TEMP_HAND_SUFFIX = ") -----";
+
+const char* MSG_REARRANGE_MENU_PLAY_NEW = "1) Play a NEW combination (from hand)";
+const char* MSG_REARRANGE_MENU_EXTEND = "2) Add tile(s) to an existing combination (from hand)";
+const char* MSG_REARRANGE_MENU_STEAL = "3) Steal a tile and use it (same action)";
+const char* MSG_REARRANGE_MENU_FINISH = "4) Finish rearrange (commit if valid)";
+const char* MSG_REARRANGE_MENU_CANCEL = "5) Cancel rearrange (rollback)";
+
+const char* MSG_REARRANGE_INVALID_INPUT_CANCELLED = "Invalid input. Rearrange cancelled.";
+const char* MSG_REARRANGE_CANCELLED_ROLLBACK = "Rearrange cancelled. Rollback.";
+const char* MSG_REARRANGE_DID_NOT_CHANGE = "You didn't change anything. Rearrange not applied.";
+const char* MSG_REARRANGE_FINAL_TABLE_INVALID = "Final table is NOT valid. Rearrange cancelled (rollback).";
+const char* MSG_REARRANGE_COMMITTED = "Rearrange committed successfully!";
+const char* MSG_ACTION_FAILED_TRY_AGAIN = "This action failed. You can try another action, or finish/cancel.";
+
+const char* MSG_HAND_LABEL_SUFFIX = " hand:";
+
+const char* MSG_HOW_MANY_FROM_HAND_WITH_STOLEN_PREFIX = "How many tiles from your hand to use with the stolen tile? (0..";
+const char* MSG_TOO_FEW_TILES_COMBINATION = "Too few tiles. A combination must be at least 3.";
+const char* MSG_HAND_INDEXES_SUFFIX = " hand indexes: ";
+const char* MSG_INVALID_HAND_INDEXES = "Invalid hand indexes.";
+const char* MSG_NOT_VALID_COMBINATION = "Not a valid combination.";
+const char* MSG_NEW_COMBINATION_CREATED = "New combination created successfully.";
+
+const char* MSG_CHOOSE_TARGET_TABLE_INDEX_PREFIX = "Choose target table combination index (0..";
+const char* MSG_CHOOSE_SOURCE_TABLE_INDEX_PREFIX = "Choose source table combination index (0..";
+const char* MSG_TARGET_COMBINATION_IS = "Target combination is:";
+const char* MSG_INSERT_FAILED = "Insert failed.";
+const char* MSG_INVALID_AFTER_INSERTING_CANCELLED = "Invalid after inserting. Move cancelled.";
+const char* MSG_STOLEN_TILE_ADDED_SUCCESS = "Stolen tile added to existing combination successfully.";
+
+// ANSI COLORS
+const char* ANSI_COLOR_ORANGE = "\033[93m";
+const char* ANSI_COLOR_RED = "\033[91m";
+const char* ANSI_COLOR_BLUE = "\033[94m";
+const char* ANSI_COLOR_BLACK = "\033[90m";
+
+const char* ANSI_COLOR_GREEN = "\033[92m";
+const char* ANSI_RESET = "\033[0m";
 
 // ------------------------------------------------ Classes ------------------------------------------------
 
@@ -27,92 +220,98 @@ struct Tile {
 };
 
 struct Player {
-    Tile hand[PILE_SIZE];
+    Tile hand[HAND_CAPACITY];
     int currentHandSize;
     bool hasOpened;
 };
 
 struct Combination {
-    Tile tiles[PILE_SIZE];
+    Tile tiles[COMBINATION_CAPACITY];
     int size;
 };
 
 struct Table {
-    Combination combinations[PILE_SIZE];
+    Combination combinations[MAX_COMBINATIONS];
     int combinationsCount;
 };
 
 // ------------------------------------------------ Functions Declarations ------------------------------------------------
 
+// 1) Input / Validation
+
 void enterValidPlayersCount(int& playersCount);
+bool readInt(int& x);
+bool readChosenIndexes(int* chosenIndexes, int chosenCount, int handSize);
 
-void createTiles(Tile* pile);
-void shuffleTiles(Tile* pile, int pileSize = PILE_SIZE);
+// 2) Printing helpers
 
-bool drawFromPile(Tile* pile, int& pileSize, Tile* tile);
-void addToHand(Player* player, const Tile& tile);
-void seedTilesToPlayers(Player* players, int playersCount, Tile* pile, int& pileSize);
-
+const char* ansiColor(Color c);
+const char* ansiReset();
 char colorToChar(Color color);
 void printTile(const Tile& tile);
 void printHand(const Player& player);
+void printHandWithIndexes(const Player& player);
+void printCombinationWithIndexes(const Combination& combination);
+void printTable(const Table& table);
 void printAllHands(const Player* players, const int playersCount);
 
-bool isJoker(const Tile& tile);
+// 3) Tiles / Pile
 
-bool isValidGroup(const Tile* tiles, int size);
+void createTiles(Tile* pile);
+void shuffleTiles(Tile* pile, int pileSize = PILE_SIZE);
+bool drawFromPile(Tile* pile, int& pileSize, Tile* tile);
+bool drawOneTile(Player& player, Tile* pile, int& pileSize);
 
-void sortArrayFunc(int* array, int size);
-bool isValidRun(const Tile* tiles, int size);
+// 4) Player hand operations
 
-bool isValidCombination(const Tile* tiles, int size);
-
-void printHandWithIndexes(const Player& player);
+void addToHand(Player* player, const Tile& tile);
+void addToHandEnd(Player& player, const Tile& tile);
 bool removeFromHand(Player& player, int index);
-void addCombinationToTable(Table& table, const Tile* tiles, int size);
-void printTable(const Table& table);
-
-bool readChosenIndexes(int* chosenIndexes, int chosenCount, int handSize);
+void seedTilesToPlayers(Player* players, int playersCount, Tile* pile, int& pileSize);
 void buildChosenTiles(const Player& player, const int* chosenIndexes, int chosenCount, Tile* chosenTiles);
 void sortIndexesDesc(int* array, int size);
 void removeChosenFromHand(Player& player, int* chosenIndexes, int chosenCount);
 
-/*!!!!!!!!!!!*/ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber); /*!!!!!!!!!!!*/
+// 5) Table operations
 
-int tilePoints(const Tile& tile);
-int handPoints(const Player& player);
-
-bool drawOneTile(Player& player, Tile* pile, int& pileSize);
-int findWinnerByLowestPoints(Player* players, int playersCount);
-
-int combinationPoints(const Tile* tiles, int size);
-
-void addToHandEnd(Player& player, const Tile& tile);
+void addCombinationToTable(Table& table, const Tile* tiles, int size);
 void removeLastCombinations(Table& table, int count);
+void removeEmptyCombinations(Table& table);
+bool isTableValid(const Table& table);
 
-bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNumber);
+// 6) Combination operations
 
 bool removeTileFromCombination(Combination& combination, int index, Tile& removedTile);
 bool insertTileInCombinationAt(Combination& combination, const Tile& tile, int index);
-void printCombinationWithIndexes(const Combination& combination);
+bool splitOneCombinationIntoTwo(const Combination& src, int splitPos, Combination& left, Combination& right);
+bool trySplitAfterRemoval(Table& table, int sourceIndex);
+void rollbackCombination(Combination& target, const Combination& backup, Player& player, Tile* returned, int count);
 
+// 7) Rules / Validation
+
+bool isJoker(const Tile& tile);
+bool isValidGroup(const Tile* tiles, int size);
+void sortArrayFunc(int* array, int size);
+bool isValidRun(const Tile* tiles, int size);
+bool isValidCombination(const Tile* tiles, int size);
+
+// 8) Points / Scoring
+
+int tilePoints(const Tile& tile);
+int handPoints(const Player& player);
+int combinationPoints(const Tile* tiles, int size);
+int findWinnerByLowestPoints(Player* players, int playersCount);
+
+// 9) Turn actions / Game moves
+
+/*!!!!!!!!!!!*/ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber); /*!!!!!!!!!!!*/
+bool tryPlayNewCombination(Player& player, Table& table, int playerNumber);
+bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNumber);
 /*!!!!!!!!!!!*/ bool tryStealAndUseTile(Player& player, Table& table, int playerNumber); /*!!!!!!!!!!!*/
 bool tryCreateNewCombinationWithExtraTile(Player& player, Table& table, const Tile& extraTile);
 bool tryAddExtraTileToExistingCombination(Table& table, const Tile& extraTile);
-
 bool tryReplaceJokerAndSteal(Player& player, Combination& source, int jokerIndex, Tile& stolenJoker, Tile& usedHandTile, bool& tookFromHand);
-
-bool splitOneCombinationIntoTwo(const Combination& src, int splitPos, Combination& left, Combination& right);
-bool trySplitAfterRemoval(Table& table, int sourceIndex);
-
-bool isTableValid(const Table& table);
-void removeEmptyCombinations(Table& table);
-
-bool tryPlayNewCombination(Player& player, Table& table, int playerNumber);
 bool tryRearrangeTurn(Player& player, Table& table, int playerNumber);
-
-const char* ansiColor(Color c);
-const char* ansiReset();
 
 // ------------------------------------------------ main() Function ------------------------------------------------
 
@@ -133,7 +332,7 @@ int main()
 
     printAllHands(players, playersCount);
 
-    cout << "Remaining tiles in pile: " << pileSize << endl;
+    cout << MSG_REMAINING_TILES_IN_PILE << pileSize << endl;
 
     Table table;
     table.combinationsCount = 0;
@@ -143,32 +342,32 @@ int main()
 
     while (!gameOver) 
     {
-        cout << endl << "\033[92m" << "========== ROUND " << roundCounter++ << " ==========" << "\033[0m" << endl;
+        cout << endl << ANSI_COLOR_GREEN << MSG_ROUND_PREFIX << roundCounter++ << MSG_ROUND_SUFFIX << ANSI_RESET << endl;
 
         for (int i = 0; i < playersCount; i++) {
-            cout << endl << "==============================" << endl;
+            cout << endl << MSG_SEPARATOR_LINE << endl;
             printTable(table);
 
             bool played = tryPlayCombinationTurn(players[i], table, i + 1);
 
-            cout << endl << "Player " << (i + 1) << " new hand:" << endl;
+            cout << endl << MSG_EXTEND_TITLE_PREFIX << (i + 1) << MSG_PLAYER_NEW_HAND_SUFFIX << endl;
             printHandWithIndexes(players[i]);
 
             if (players[i].currentHandSize == 0) {
-                cout << endl << "Player " << (i + 1) << " wins!" << endl;
+                cout << endl << MSG_EXTEND_TITLE_PREFIX << (i + 1) << MSG_PLAYER_WINS_SUFFIX << endl;
                 gameOver = true;
                 break;
             }
 
             if (!played) {
-                cout << "No combination played. You must draw 1 tile." << endl;
+                cout << MSG_NO_COMB_PLAYED_DRAW << endl;
 
                 if (!drawOneTile(players[i], pile, pileSize)) 
                 {
-                    cout << endl << "Pile is empty. Game ends." << endl;
+                    cout << endl << MSG_PILE_EMPTY_ENDS << endl;
                     int winnerIndex = findWinnerByLowestPoints(players, playersCount);
 
-                    cout << "Winner is Player " << (winnerIndex + 1) << " with " << handPoints(players[winnerIndex]) << " points." << endl;
+                    cout << MSG_WINNER_PREFIX << (winnerIndex + 1) << MSG_WINNER_WITH << handPoints(players[winnerIndex]) << MSG_POINTS_SUFFIX << endl;
 
                     gameOver = true;
                     break;
@@ -185,14 +384,11 @@ int main()
 void enterValidPlayersCount(int& playersCount) {
     while (true) 
     {
-        cout << "Enter the number of players (2-4): ";
-        cin >> playersCount;
+        cout << MSG_ENTER_PLAYERS;
 
-        if (cin.fail() || (playersCount < 2 || playersCount > 4))
+        if (!readInt(playersCount) || playersCount < MIN_PLAYERS || playersCount > MAX_PLAYERS)
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Try to add a valid number of players." << endl;
+            cout << MSG_TRY_VALID_PLAYERS << endl;
             continue;
         }
 
@@ -201,16 +397,16 @@ void enterValidPlayersCount(int& playersCount) {
 }
 
 void createTiles(Tile* pile){
-    const int COLORS_COUNT = 4;
-    const int VALUES_COUNT = 13;
+    const int COLORS_COUNT = COLOR_COUNT;
+    const int VALUES_COUNT = MAX_TILE_VALUE;
     
     int index = 0;
 
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < DUPLICATE_SETS; k++)
     {
         for (int i = 0; i < COLORS_COUNT; i++)
         {
-            for (int j = 1; j <= VALUES_COUNT; j++)
+            for (int j = MIN_TILE_VALUE; j <= VALUES_COUNT; j++)
             {
                 pile[index].color = (Color)i;
                 pile[index].value = j;
@@ -220,11 +416,11 @@ void createTiles(Tile* pile){
     }
 
     // jokers
-    pile[index++] = Tile{ 0, RED };
-    pile[index++] = Tile{ 0, BLACK };
+    pile[index++] = Tile{ JOKER_VALUE, RED };
+    pile[index++] = Tile{ JOKER_VALUE, BLACK };
 
     if (index != PILE_SIZE) {
-        cout << "Error: wrong tiles count: " << index << endl;
+        cout << MSG_ERROR_WRONG_TILES_COUNT_PREFIX << index << endl;
         return;
     }
 }
@@ -260,7 +456,7 @@ void addToHand(Player* player, const Tile& tile) {
     {
         return;
     }
-    if (player->currentHandSize >= PILE_SIZE)
+    if (player->currentHandSize >= HAND_CAPACITY)
     {
         return;
     }
@@ -309,7 +505,7 @@ char colorToChar(Color color) {
 void printTile(const Tile& tile) {
     cout << ansiColor(tile.color);
 
-    if (tile.value == 0) 
+    if (tile.value == JOKER_VALUE)
     {
         cout << "[J-" << colorToChar(tile.color) << "]";
     }
@@ -324,7 +520,7 @@ void printTile(const Tile& tile) {
 void printHand(const Player& player) {
     for (int i = 0; i < player.currentHandSize; i++) {
         printTile(player.hand[i]);
-        cout << " ";
+        cout << MSG_SPACE;
     }
     cout << endl;
 }
@@ -336,13 +532,13 @@ void printAllHands(const Player* players, const int playersCount) {
     }
 
     for (int i = 0; i < playersCount; i++) {
-        cout << "Player " << (i + 1) << " hand:" << endl;
+        cout << MSG_EXTEND_TITLE_PREFIX << (i + 1) << MSG_HAND_LABEL_SUFFIX << endl;
         printHand(players[i]);
     }
 }
 
 bool isJoker(const Tile& tile) {
-    if (tile.value == 0)
+    if (tile.value == JOKER_VALUE)
     {
         return true;
     }
@@ -350,12 +546,12 @@ bool isJoker(const Tile& tile) {
 }
 
 bool isValidGroup(const Tile* tiles, int size) {
-    if (size != 3 && size != 4) 
+    if (size != MIN_COMBINATION_SIZE && size != MAX_GROUP_SIZE)
     {
         return false;
     }
 
-    const int COLORS_COUNT = 4;
+    const int COLORS_COUNT = COLOR_COUNT;
     int targetValue = -1;
 
     for (int i = 0; i < size; i++) 
@@ -423,7 +619,7 @@ bool isValidRun(const Tile* tiles, int size) {
     {
         return false;
     }
-    if (size < 3) 
+    if (size < MIN_COMBINATION_SIZE)
     {
         return false;
     }
@@ -448,7 +644,7 @@ bool isValidRun(const Tile* tiles, int size) {
         return true;
     }
 
-    int values[PILE_SIZE];
+    int values[COMBINATION_CAPACITY];
     int valuesCount = 0;
     int jokersCount = 0;
 
@@ -502,7 +698,7 @@ bool isValidRun(const Tile* tiles, int size) {
     int minV = values[0];
     int maxV = values[valuesCount - 1];
 
-    int maxExtend = (minV - 1) + (13 - maxV);
+    int maxExtend = (minV - 1) + (MAX_TILE_VALUE - maxV);
 
     return extra <= maxExtend;
 }
@@ -514,7 +710,7 @@ bool isValidCombination(const Tile* tiles, int size) {
 void printHandWithIndexes(const Player& player) {
     for (int i = 0; i < player.currentHandSize; i++) 
     {
-        cout << i << ": ";
+        cout << i << MSG_COLON;
         printTile(player.hand[i]);
         cout << endl;
     }
@@ -536,7 +732,7 @@ bool removeFromHand(Player& player, int index) {
 }
 
 void addCombinationToTable(Table& table, const Tile* tiles, int size) {
-    if (table.combinationsCount >= PILE_SIZE) 
+    if (table.combinationsCount >= MAX_COMBINATIONS)
     {
         return;
     }
@@ -551,22 +747,22 @@ void addCombinationToTable(Table& table, const Tile* tiles, int size) {
 }
 
 void printTable(const Table& table) {
-    cout << endl << "TABLE:" << endl;
+    cout << endl << MSG_TABLE_HEADER << endl;
 
     if (table.combinationsCount == 0) 
     {
-        cout << "(empty)" << endl;
+        cout << MSG_TABLE_EMPTY_PRINT << endl;
         return;
     }
 
     for (int i = 0; i < table.combinationsCount; i++) 
     {
-        cout << i << ") ";
+        cout << i << MSG_CLOSING_BRACKET;
 
         for (int j = 0; j < table.combinations[i].size; j++) 
         {
             printTile(table.combinations[i].tiles[j]);
-            cout << " ";
+            cout << MSG_SPACE;
         }
 
         cout << endl;
@@ -576,13 +772,9 @@ void printTable(const Table& table) {
 bool readChosenIndexes(int* chosenIndexes, int chosenCount, int handSize) {
     for (int i = 0; i < chosenCount; i++) 
     {
-        cin >> chosenIndexes[i];
-
-        if (cin.fail()) 
+        if (!readInt(chosenIndexes[i]))
         {
-            cin.clear(); 
-            cin.ignore(10000, '\n'); 
-            return false; 
+            return false;
         }
 
         if (chosenIndexes[i] < 0 || chosenIndexes[i] >= handSize) 
@@ -639,81 +831,70 @@ void removeChosenFromHand(Player& player, int* chosenIndexes, int chosenCount) {
 }
 
 bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
-    cout << endl << "Player " << playerNumber << " turn." << endl;
+    cout << endl << MSG_EXTEND_TITLE_PREFIX << playerNumber << MSG_PLAYER_TURN_SUFFIX << endl;
 
-    cout << "Your hand:" << endl;
+    cout << MSG_YOUR_HAND << endl;
     printHandWithIndexes(player);
 
     if (player.hasOpened)
     {
-        cout << "1) Play a new combination" << endl;
-        cout << "2) Add a tile to an existing table combination" << endl;
-        cout << "3) Steal a tile from table and use it (same turn)" << endl;
-        cout << "4) Rearrange table (multiple actions, commit/rollback)" << endl;
-        cout << "5) Draw a tile (end turn)" << endl;
-        cout << "Choose: ";
+        cout << MSG_MENU_PLAY_NEW << endl;
+        cout << MSG_MENU_EXTEND_EXISTING << endl;
+        cout << MSG_MENU_STEAL_AND_USE << endl;
+        cout << MSG_MENU_REARRANGE << endl;
+        cout << MSG_MENU_DRAW_END << endl;
+        cout << MSG_CHOOSE_PROMPT;
 
         int choice;
-        cin >> choice;
-
-        if (cin.fail()) 
+        if (!readInt(choice)) 
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input." << endl;
             return false;
-        }
+        }      
 
-        if (choice == 5) 
+        if (choice == TURN_DRAW_END)
         {
             return false;
         }
-        if (choice == 4)
+        if (choice == TURN_REARRANGE)
         {
             return tryRearrangeTurn(player, table, playerNumber);
         }
-        if (choice == 3)
+        if (choice == TURN_STEAL_AND_USE)
         {
             return tryStealAndUseTile(player, table, playerNumber);
         }
-        if (choice == 2) 
+        if (choice == TURN_EXTEND_EXISTING)
         {
             return tryAddTileToExistingCombination(player, table, playerNumber);
         }
-        if (choice == 1)
+        if (choice == TURN_PLAY_NEW)
         {
             return tryPlayNewCombination(player, table, playerNumber);
         }
 
-        cout << "Invalid choice." << endl;
+        cout << MSG_INVALID_CHOICE << endl;
         return false;
     }
 
-    cout << "You have NOT opened yet. You must place combinations with total >= 30 points this turn." << endl;
+    cout << MSG_OPENING_REQUIRED_PREFIX << OPENING_POINTS << MSG_OPENING_REQUIRED_SUFFIX << endl;
 
     int turnSum = 0;
 
     int startCombinationsCount = table.combinationsCount;
 
-    Tile takenTiles[HAND_SIZE];
+    Tile takenTiles[HAND_CAPACITY];
     int takenCount = 0;
 
     while (true)
     {
-        cout << endl << "Current placed points this turn: " << turnSum << " / 30" << endl;
-        cout << "1) Add a combination" << endl;
-        cout << "2) Draw a tile (give up opening and end turn)" << endl;
-        cout << "Choose: ";
+        cout << endl << MSG_OPENING_POINTS_STATUS_PREFIX << turnSum << MSG_SLASH << OPENING_POINTS << endl;
+        cout << MSG_OPEN_MENU_ADD_COMBINATION << endl;
+        cout << MSG_OPEN_MENU_DRAW_GIVE_UP << endl;
+        cout << MSG_CHOOSE_PROMPT;
 
         int choice;
-        cin >> choice;
-
-        if (cin.fail()) 
+        if (!readInt(choice))
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input." << endl;
-
             removeLastCombinations(table, table.combinationsCount - startCombinationsCount);
 
             for (int i = 0; i < takenCount; i++)
@@ -724,7 +905,7 @@ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
             return false;
         }
 
-        if (choice == 2) 
+        if (choice == OPEN_TURN_DRAW_GIVE_UP)
         {
             removeLastCombinations(table, table.combinationsCount - startCombinationsCount);
 
@@ -736,41 +917,36 @@ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
             return false;
         }
 
-        if (choice != 1) 
+        if (choice != OPEN_TURN_ADD_COMBINATION)
         {
-            cout << "Invalid choice." << endl;
+            cout << MSG_INVALID_CHOICE << endl;
             continue;
         }
 
-        cout << endl << "Choose tiles to form a combination." << endl;
+        cout << endl << MSG_CHOOSE_TILES_TO_FORM << endl;
         printHandWithIndexes(player);
 
-        cout << "How many tiles in the combination?" << endl;
+        cout << MSG_HOW_MANY_TILES_IN_COMB << endl;
         int chosenCount;
-        cin >> chosenCount;
-
-        if (cin.fail()) 
+        if (!readInt(chosenCount))
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input." << endl;
-            continue;
+            return false;
         }
 
         if (chosenCount < 3 || chosenCount > HAND_SIZE || chosenCount > player.currentHandSize) 
         {
-            cout << "Invalid count." << endl;
+            cout << MSG_INVALID_COUNT << endl;
             continue;
         }
 
         int chosenIndexes[HAND_SIZE];
         Tile chosenTiles[HAND_SIZE];
 
-        cout << "Enter " << chosenCount << " indexes: ";
+        cout << MSG_ENTER_INDEXES_PREFIX << chosenCount << MSG_ENTER_INDEXES_SUFFIX;
 
         if (!readChosenIndexes(chosenIndexes, chosenCount, player.currentHandSize)) 
         {
-            cout << "Invalid indexes." << endl;
+            cout << MSG_INVALID_INDEXES << endl;
             continue;
         }
 
@@ -778,16 +954,16 @@ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
 
         if (!isValidCombination(chosenTiles, chosenCount)) 
         {
-            cout << "Invalid combination!" << endl;
+            cout << MSG_INVALID_COMBINATION << endl;
             continue;
         }
 
         int pts = combinationPoints(chosenTiles, chosenCount);
-        cout << "This combination points: " << pts << endl;
+        cout << MSG_THIS_COMBINATION_POINTS_PREFIX << pts << endl;
 
         for (int i = 0; i < chosenCount; i++) 
         {
-            if (takenCount < HAND_SIZE) 
+            if (takenCount < HAND_CAPACITY)
             {
                 takenTiles[takenCount++] = chosenTiles[i];
             }
@@ -798,10 +974,10 @@ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
 
         turnSum += pts;
 
-        if (turnSum >= 30) 
+        if (turnSum >= OPENING_POINTS)
         {
             player.hasOpened = true;
-            cout << "You have opened (>=30)! Turn ends." << endl;
+            cout << MSG_OPENED_SUCCESS_PREFIX << OPENING_POINTS << MSG_OPENED_SUCCESS_SUFFIX << endl;
             return true;
         }
     }
@@ -810,7 +986,7 @@ bool tryPlayCombinationTurn(Player& player, Table& table, int playerNumber) {
 int tilePoints(const Tile& tile) {
     if (isJoker(tile)) 
     {
-        return 30;
+        return OPENING_POINTS;
     }
 
     return tile.value;
@@ -837,7 +1013,7 @@ bool drawOneTile(Player& player, Tile* pile, int& pileSize) {
 
     addToHand(&player, drawnTile);
 
-    cout << "You drew: ";
+    cout << MSG_YOU_DREW_PREFIX;
     printTile(drawnTile);
     cout << endl;
 
@@ -871,7 +1047,7 @@ int combinationPoints(const Tile* tiles, int size) {
 }
 
 void addToHandEnd(Player& player, const Tile& tile) {
-    if (player.currentHandSize >= PILE_SIZE) 
+    if (player.currentHandSize >= HAND_CAPACITY)
     {
         return;
     }
@@ -896,76 +1072,63 @@ void removeLastCombinations(Table& table, int count) {
 bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNumber) {
     if (table.combinationsCount <= 0)
     {
-        cout << "Table is empty. No combinations to add to." << endl;
+        cout << MSG_TABLE_EMPTY_NO_COMB_TO_ADD << endl;
         return false;
     }
 
-    cout << endl << "Player " << playerNumber << " - Extend existing combination (add >=1 tiles)" << endl;
+    cout << endl << MSG_EXTEND_TITLE_PREFIX << playerNumber << MSG_EXTEND_TITLE_SUFFIX << endl;
 
-    cout << "Choose table combination index (0.." << (table.combinationsCount - 1) << "): ";
+    cout << MSG_CHOOSE_TABLE_INDEX_PREFIX << (table.combinationsCount - 1) << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
+
     int tableIndex;
-    cin >> tableIndex;
-
-    if (cin.fail())
+    if (!readInt(tableIndex))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (tableIndex < 0 || tableIndex >= table.combinationsCount)
     {
-        cout << "Invalid table index." << endl;
+        cout << MSG_INVALID_TABLE_INDEX << endl;
         return false;
     }
 
     if (player.currentHandSize <= 0)
     {
-        cout << "You have no tiles." << endl;
+        cout << MSG_NO_TILES_IN_HAND << endl;
         return false;
     }
 
-    cout << "How many tiles do you want to add (1.." << player.currentHandSize << "): ";
-    int addCount;
-    cin >> addCount;
+    cout << MSG_HOW_MANY_TILES_ADD_PREFIX << player.currentHandSize << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
-    if (cin.fail())
+    int addCount;
+    if (!readInt(addCount))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (addCount < 1 || addCount > player.currentHandSize)
     {
-        cout << "Invalid count." << endl;
+        cout << MSG_INVALID_COUNT << endl;
         return false;
     }
 
     Combination oldCombination = table.combinations[tableIndex];
 
-    Tile removedTiles[HAND_SIZE];
+    Tile removedTiles[HAND_CAPACITY];
     int removedCount = 0;
 
     for (int step = 0; step < addCount; step++)
     {
-        cout << endl << "Your hand:" << endl;
+        cout << endl << MSG_YOUR_HAND << endl;
         printHandWithIndexes(player);
 
-        cout << "Choose hand tile index to add (" << (step + 1) << "/" << addCount << "): ";
+        cout << MSG_STEP_CHOOSE_HAND_TILE_PREFIX << (step + 1) << MSG_STEP_CHOOSE_HAND_TILE_MIDDLE << addCount << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
+
         int handIndex;
-        cin >> handIndex;
-
-        if (cin.fail())
+        if (!readInt(handIndex))
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input." << endl;
-
             table.combinations[tableIndex] = oldCombination;
-            for (int i = 0; i < removedCount; i++) 
+            for (int i = 0; i < removedCount; i++)
             {
                 addToHandEnd(player, removedTiles[i]);
             }
@@ -974,7 +1137,7 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
 
         if (handIndex < 0 || handIndex >= player.currentHandSize)
         {
-            cout << "Invalid hand index." << endl;
+            cout << MSG_INVALID_HAND_INDEX << endl;
 
             table.combinations[tableIndex] = oldCombination;
             for (int i = 0; i < removedCount; i++) 
@@ -985,29 +1148,22 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
             return false;
         }
 
-        cout << "Insert position index (0.." << table.combinations[tableIndex].size << "): ";
+        cout << MSG_INSERT_POSITION_PREFIX << table.combinations[tableIndex].size << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
+
         int insertPos;
-        cin >> insertPos;
-
-        if (cin.fail())
+        if (!readInt(insertPos))
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input." << endl;
-
             table.combinations[tableIndex] = oldCombination;
-
-            for (int i = 0; i < removedCount; i++) 
+            for (int i = 0; i < removedCount; i++)
             {
                 addToHandEnd(player, removedTiles[i]);
             }
-            
             return false;
         }
 
         if (insertPos < 0 || insertPos > table.combinations[tableIndex].size)
         {
-            cout << "Invalid insert position." << endl;
+            cout << MSG_INVALID_INSERT_POSITION << endl;
 
             table.combinations[tableIndex] = oldCombination;
 
@@ -1023,7 +1179,7 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
 
         if (!removeFromHand(player, handIndex))
         {
-            cout << "Failed to remove tile from hand." << endl;
+            cout << MSG_FAILED_REMOVE_TILE_FROM_HAND << endl;
 
             table.combinations[tableIndex] = oldCombination;
 
@@ -1035,14 +1191,14 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
             return false;
         }
 
-        if (removedCount < HAND_SIZE)
+        if (removedCount < HAND_CAPACITY)
         {
             removedTiles[removedCount++] = tileToAdd;
         }
 
         if (!insertTileInCombinationAt(table.combinations[tableIndex], tileToAdd, insertPos))
         {
-            cout << "Failed to insert tile in combination." << endl;
+            cout << MSG_FAILED_INSERT_TILE_IN_COMB << endl;
 
             table.combinations[tableIndex] = oldCombination;
 
@@ -1059,7 +1215,7 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
 
     if (!isValidCombination(modified.tiles, modified.size))
     {
-        cout << "Invalid after adding tiles. Move cancelled." << endl;
+        cout << MSG_INVALID_AFTER_ADDING_CANCELLED << endl;
 
         table.combinations[tableIndex] = oldCombination;
 
@@ -1071,16 +1227,16 @@ bool tryAddTileToExistingCombination(Player& player, Table& table, int playerNum
         return false;
     }
 
-    cout << "Tiles added successfully." << endl;
+    cout << MSG_TILES_ADDED_SUCCESS << endl;
     return true;
 }
 
 void printCombinationWithIndexes(const Combination& combination) {
     for (int i = 0; i < combination.size; i++) 
     {
-        cout << i << ": ";
+        cout << i << MSG_COLON;
         printTile(combination.tiles[i]);
-        cout << " ";
+        cout << MSG_SPACE;
     }
 
     cout << endl;
@@ -1104,7 +1260,7 @@ bool removeTileFromCombination(Combination& combination, int index, Tile& remove
 }
 
 bool insertTileInCombinationAt(Combination& combination, const Tile& tile, int index) {
-    if (combination.size >= PILE_SIZE) 
+    if (combination.size >= COMBINATION_CAPACITY)
     {
         return false;
     }
@@ -1125,42 +1281,37 @@ bool insertTileInCombinationAt(Combination& combination, const Tile& tile, int i
 }
 
 bool tryCreateNewCombinationWithExtraTile(Player& player, Table& table, const Tile& extraTile) {
-    cout << "How many tiles from your hand to use with the stolen tile? (0.." << player.currentHandSize << "): ";
+    cout << MSG_HOW_MANY_FROM_HAND_WITH_STOLEN_PREFIX << player.currentHandSize << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
     int fromHandCount;
-    cin >> fromHandCount;
-
-    if (cin.fail())
+    if (!readInt(fromHandCount))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (fromHandCount < 0 || fromHandCount > player.currentHandSize) 
     {
-        cout << "Invalid count." << endl;
+        cout << MSG_INVALID_COUNT << endl;
         return false;
     }
 
     int newSize = fromHandCount + 1;
 
-    if (newSize < 3)
+    if (newSize < MIN_COMBINATION_SIZE)
     {
-        cout << "Too few tiles. A combination must be at least 3." << endl;
+        cout << MSG_TOO_FEW_TILES_COMBINATION << endl;
         return false;
     }
 
-    int chosenIndexes[PILE_SIZE];
-    Tile newTiles[PILE_SIZE];
+    int chosenIndexes[HAND_CAPACITY];
+    Tile newTiles[HAND_CAPACITY];
 
     if (fromHandCount > 0) 
     {
-        cout << "Enter " << fromHandCount << " hand indexes: ";
+        cout << MSG_ENTER_INDEXES_PREFIX << fromHandCount << MSG_HAND_INDEXES_SUFFIX;
         if (!readChosenIndexes(chosenIndexes, fromHandCount, player.currentHandSize)) 
         {
-            cout << "Invalid hand indexes." << endl;
+            cout << MSG_INVALID_HAND_INDEXES << endl;
             return false;
         }
 
@@ -1171,7 +1322,7 @@ bool tryCreateNewCombinationWithExtraTile(Player& player, Table& table, const Ti
 
     if (!isValidCombination(newTiles, newSize))
     {
-        cout << "Not a valid combination." << endl;
+        cout << MSG_NOT_VALID_COMBINATION << endl;
         return false;
     }
 
@@ -1182,7 +1333,7 @@ bool tryCreateNewCombinationWithExtraTile(Player& player, Table& table, const Ti
 
     addCombinationToTable(table, newTiles, newSize);
 
-    cout << "New combination created successfully." << endl;
+    cout << MSG_NEW_COMBINATION_CREATED << endl;
 
     return true;
 }
@@ -1193,36 +1344,28 @@ bool tryAddExtraTileToExistingCombination(Table& table, const Tile& extraTile) {
         return false;
     }
 
-    cout << "Choose target table combination index (0.." << (table.combinationsCount - 1) << "): ";
-    int targetIndex;
-    cin >> targetIndex;
+    cout << MSG_CHOOSE_TARGET_TABLE_INDEX_PREFIX << (table.combinationsCount - 1) << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
-    if (cin.fail())
+    int targetIndex;
+    if (!readInt(targetIndex))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (targetIndex < 0 || targetIndex >= table.combinationsCount) 
     {
-        cout << "Invalid table index." << endl;
+        cout << MSG_INVALID_TABLE_INDEX << endl;
         return false;
     }
 
-    cout << "Target combination is:" << endl;
+    cout << MSG_TARGET_COMBINATION_IS << endl;
     printCombinationWithIndexes(table.combinations[targetIndex]);
 
-    cout << "Insert position index (0.." << table.combinations[targetIndex].size << "): ";
-    int insertPos;
-    cin >> insertPos;
+    cout << MSG_INSERT_POSITION_PREFIX << table.combinations[targetIndex].size << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
-    if (cin.fail()) 
+    int insertPos;
+    if (!readInt(insertPos))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
@@ -1230,19 +1373,19 @@ bool tryAddExtraTileToExistingCombination(Table& table, const Tile& extraTile) {
 
     if (!insertTileInCombinationAt(table.combinations[targetIndex], extraTile, insertPos))
     {
-        cout << "Insert failed." << endl;
+        cout << MSG_INSERT_FAILED << endl;
         table.combinations[targetIndex] = old;
         return false;
     }
 
     if (!isValidCombination(table.combinations[targetIndex].tiles, table.combinations[targetIndex].size))
     {
-        cout << "Invalid after inserting. Move cancelled." << endl;
+        cout << MSG_INVALID_AFTER_INSERTING_CANCELLED << endl;
         table.combinations[targetIndex] = old;
         return false;
     }
 
-    cout << "Stolen tile added to existing combination successfully." << endl;
+    cout << MSG_STOLEN_TILE_ADDED_SUCCESS << endl;
 
     return true;
 }
@@ -1250,49 +1393,41 @@ bool tryAddExtraTileToExistingCombination(Table& table, const Tile& extraTile) {
 bool tryStealAndUseTile(Player& player, Table& table, int playerNumber) {
     if (table.combinationsCount <= 0)
     {
-        cout << "Table is empty. Nothing to steal." << endl;
+        cout << MSG_TABLE_EMPTY_NOTHING_TO_STEAL << endl;
         return false;
     }
 
-    cout << endl << "Player " << playerNumber << " - Steal & use a tile (same turn)" << endl;
+    cout << endl << MSG_EXTEND_TITLE_PREFIX << playerNumber << MSG_STEAL_TITLE_SUFFIX << endl;
     printTable(table);
 
-    cout << "Choose source table combination index (0.." << (table.combinationsCount - 1) << "): ";
-    int sourceIndex;
-    cin >> sourceIndex;
+    cout << MSG_CHOOSE_SOURCE_TABLE_INDEX_PREFIX << (table.combinationsCount - 1) << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
-    if (cin.fail())
+    int sourceIndex;
+    if (!readInt(sourceIndex))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (sourceIndex < 0 || sourceIndex >= table.combinationsCount)
     {
-        cout << "Invalid table index." << endl;
+        cout << MSG_INVALID_TABLE_INDEX << endl;
         return false;
     }
 
-    cout << "Source combination tiles:" << endl;
+    cout << MSG_SOURCE_COMBINATION_TILES << endl;
     printCombinationWithIndexes(table.combinations[sourceIndex]);
 
-    cout << "Choose tile index to steal (0.." << (table.combinations[sourceIndex].size - 1) << "): ";
-    int tileIndex;
-    cin >> tileIndex;
+    cout << MSG_CHOOSE_TILE_INDEX_TO_STEAL_PREFIX << (table.combinations[sourceIndex].size - 1) << MSG_CHOOSE_TABLE_INDEX_SUFFIX;
 
-    if (cin.fail())
+    int tileIndex;
+    if (!readInt(tileIndex))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (tileIndex < 0 || tileIndex >= table.combinations[sourceIndex].size)
     {
-        cout << "Invalid tile index." << endl;
+        cout << MSG_INVALID_TILE_INDEX << endl;
         return false;
     }
 
@@ -1314,7 +1449,7 @@ bool tryStealAndUseTile(Player& player, Table& table, int playerNumber) {
     {
         if (!removeTileFromCombination(table.combinations[sourceIndex], tileIndex, stolen))
         {
-            cout << "Failed to steal." << endl;
+            cout << MSG_FAILED_TO_STEAL << endl;
             table.combinations[sourceIndex] = oldSource;
             return false;
         }
@@ -1323,58 +1458,53 @@ bool tryStealAndUseTile(Player& player, Table& table, int playerNumber) {
         {
             if (!trySplitAfterRemoval(table, sourceIndex))
             {
-                cout << "You can't steal that tile: source combination becomes invalid (and can't be split into valid parts)." << endl;
+                cout << MSG_CANT_STEAL_SOURCE_INVALID << endl;
                 table.combinations[sourceIndex] = oldSource;
                 return false;
             }
         }
     }
 
-    cout << "Stolen tile: ";
+    cout << MSG_STOLEN_TILE_PREFIX;
     printTile(stolen);
     cout << endl;
 
-    cout << "Use stolen tile by:" << endl;
-    cout << "1) Create a NEW combination (using your hand + stolen tile)" << endl;
-    cout << "2) Add it to an EXISTING table combination" << endl;
-    cout << "Choose: ";
+    cout << MSG_USE_STOLEN_TILE_BY << endl;
+    cout << MSG_USE_STOLEN_OPTION_NEW << endl;
+    cout << MSG_USE_STOLEN_OPTION_ADD << endl;
+    cout << MSG_CHOOSE_PROMPT;
 
     int useChoice;
-    cin >> useChoice;
-
-    if (cin.fail())
+    if (!readInt(useChoice))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         table.combinations[sourceIndex] = oldSource;
         return false;
     }
 
     bool success = false;
 
-    if (useChoice == 1)
+    if (useChoice == STEAL_USE_NEW_COMBINATION)
     {
-        cout << "Your hand:" << endl;
+        cout << MSG_YOUR_HAND << endl;
         printHandWithIndexes(player);
 
         success = tryCreateNewCombinationWithExtraTile(player, table, stolen);
 
         if (!success)
         {
-            cout << "Can't create a new combination with the stolen tile." << endl;
-            cout << "According to rules, you must add it to an existing table combination (if possible)." << endl;
+            cout << MSG_CANT_CREATE_NEW_WITH_STOLEN << endl;
+            cout << MSG_ACCORDING_TO_RULES_MUST_ADD_EXISTING << endl;
 
             success = tryAddExtraTileToExistingCombination(table, stolen);
         }
     }
-    else if (useChoice == 2)
+    else if (useChoice == STEAL_USE_ADD_TO_EXISTING)
     {
         success = tryAddExtraTileToExistingCombination(table, stolen);
     }
     else
     {
-        cout << "Invalid choice." << endl;
+        cout << MSG_INVALID_CHOICE << endl;
         success = false;
     }
 
@@ -1387,11 +1517,11 @@ bool tryStealAndUseTile(Player& player, Table& table, int playerNumber) {
             addToHandEnd(player, usedHandTile);
         }
 
-        cout << "Steal move cancelled. Everything rolled back." << endl;
+        cout << MSG_STEAL_CANCEL_ROLLBACK << endl;
         return false;
     }
 
-    cout << "Steal move successful." << endl;
+    cout << MSG_STEAL_SUCCESS << endl;
     return true;
 }
 
@@ -1400,33 +1530,29 @@ bool tryReplaceJokerAndSteal(Player& player, Combination& source, int jokerIndex
     tookFromHand = false;
     stolenJoker = source.tiles[jokerIndex];
 
-    cout << "You chose to steal a JOKER." << endl;
-    cout << "To steal it, you must REPLACE it with a tile from your hand so the combination stays valid." << endl;
+    cout << MSG_YOU_CHOSE_STEAL_JOKER << endl;
+    cout << MSG_STEAL_JOKER_MUST_REPLACE << endl;
 
-    cout << "Your hand:" << endl;
+    cout << MSG_YOUR_HAND << endl;
     printHandWithIndexes(player);
 
-    cout << "Enter hand index to place instead of the Joker (-1 to cancel): ";
-    int handIndex;
-    cin >> handIndex;
+    cout << MSG_ENTER_HAND_INDEX_REPLACE_JOKER;
 
-    if (cin.fail())
+    int handIndex;
+    if (!readInt(handIndex))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
-    if (handIndex == -1)
+    if (handIndex == CANCEL_COMMAND)
     {
-        cout << "Cancelled." << endl;
+        cout << MSG_CANCELLED << endl;
         return false;
     }
 
     if (handIndex < 0 || handIndex >= player.currentHandSize)
     {
-        cout << "Invalid hand index." << endl;
+        cout << MSG_INVALID_HAND_INDEX << endl;
         return false;
     }
 
@@ -1434,7 +1560,7 @@ bool tryReplaceJokerAndSteal(Player& player, Combination& source, int jokerIndex
 
     if (isJoker(candidate))
     {
-        cout << "You can't replace a Joker with another Joker." << endl;
+        cout << MSG_CANT_REPLACE_JOKER_WITH_JOKER << endl;
         return false;
     }
 
@@ -1444,21 +1570,21 @@ bool tryReplaceJokerAndSteal(Player& player, Combination& source, int jokerIndex
     if (!isValidCombination(source.tiles, source.size))
     {
         source.tiles[jokerIndex] = oldTile;
-        cout << "Replacement makes the source combination invalid. Can't steal this Joker that way." << endl;
+        cout << MSG_REPLACEMENT_MAKES_INVALID << endl;
         return false;
     }
 
     if (!removeFromHand(player, handIndex))
     {
         source.tiles[jokerIndex] = oldTile;
-        cout << "Failed to remove tile from hand." << endl;
+        cout << MSG_FAILED_REMOVE_TILE_FROM_HAND << endl;
         return false;
     }
 
     usedHandTile = candidate;
     tookFromHand = true;
 
-    cout << "Joker replaced successfully. You stole: ";
+    cout << MSG_JOKER_REPLACED_SUCCESS_PREFIX;
     printTile(stolenJoker);
     cout << endl;
 
@@ -1497,12 +1623,12 @@ bool trySplitAfterRemoval(Table& table, int sourceIndex)
 
     Combination& src = table.combinations[sourceIndex];
 
-    if (src.size < 6)
+    if (src.size < MIN_SPLITTABLE_COMBINATION_SIZE)
     {
         return false;
     }
 
-    for (int splitPos = 3; splitPos <= src.size - 3; splitPos++)
+    for (int splitPos = MIN_PART_AFTER_SPLIT; splitPos <= src.size - MIN_PART_AFTER_SPLIT; splitPos++)
     {
         Combination left, right;
         if (!splitOneCombinationIntoTwo(src, splitPos, left, right))
@@ -1512,7 +1638,7 @@ bool trySplitAfterRemoval(Table& table, int sourceIndex)
 
         if (isValidCombination(left.tiles, left.size) && isValidCombination(right.tiles, right.size))
         {
-            if (table.combinationsCount >= PILE_SIZE)
+            if (table.combinationsCount >= MAX_COMBINATIONS)
             {
                 return false;
             }
@@ -1561,36 +1687,32 @@ bool isTableValid(const Table& table)
 
 bool tryPlayNewCombination(Player& player, Table& table, int playerNumber)
 {
-    cout << endl << "Player " << playerNumber << " - Play a NEW combination" << endl;
-    cout << "Choose tiles to form a combination." << endl;
+    cout << endl << MSG_EXTEND_TITLE_PREFIX << playerNumber << MSG_PLAY_NEW_TITLE_SUFFIX << endl;
+    cout << MSG_CHOOSE_TILES_TO_FORM << endl;
     printHandWithIndexes(player);
 
-    cout << "How many tiles in the combination?" << endl;
-    int chosenCount;
-    cin >> chosenCount;
+    cout << MSG_HOW_MANY_TILES_IN_COMB << endl;
 
-    if (cin.fail())
+    int chosenCount;
+    if (!readInt(chosenCount))
     {
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cout << "Invalid input." << endl;
         return false;
     }
 
     if (chosenCount < 3 || chosenCount > HAND_SIZE || chosenCount > player.currentHandSize)
     {
-        cout << "Invalid count." << endl;
+        cout << MSG_INVALID_COUNT << endl;
         return false;
     }
 
     int chosenIndexes[HAND_SIZE];
     Tile chosenTiles[HAND_SIZE];
 
-    cout << "Enter " << chosenCount << " indexes: ";
+    cout << MSG_ENTER_INDEXES_PREFIX << chosenCount << MSG_ENTER_INDEXES_SUFFIX;
 
     if (!readChosenIndexes(chosenIndexes, chosenCount, player.currentHandSize))
     {
-        cout << "Invalid indexes." << endl;
+        cout << MSG_INVALID_INDEXES << endl;
         return false;
     }
 
@@ -1598,21 +1720,21 @@ bool tryPlayNewCombination(Player& player, Table& table, int playerNumber)
 
     if (!isValidCombination(chosenTiles, chosenCount))
     {
-        cout << "Invalid combination!" << endl;
+        cout << MSG_INVALID_COMBINATION << endl;
         return false;
     }
 
     addCombinationToTable(table, chosenTiles, chosenCount);
     removeChosenFromHand(player, chosenIndexes, chosenCount);
 
-    cout << "Combination added." << endl;
+    cout << MSG_COMBINATION_ADDED << endl;
     return true;
 }
 
 bool tryRearrangeTurn(Player& player, Table& table, int playerNumber)
 {
-    cout << endl << "=== REARRANGE MODE (multiple actions in one turn) ===" << endl;
-    cout << "You can do multiple actions. At the end, the table must be fully valid." << endl;
+    cout << endl << MSG_REARRANGE_HEADER << endl;
+    cout << MSG_REARRANGE_DESCRIPTION << endl;
 
     Player tempPlayer = player;
     Table tempTable = table;
@@ -1621,77 +1743,73 @@ bool tryRearrangeTurn(Player& player, Table& table, int playerNumber)
 
     while (true)
     {
-        cout << endl << "----- TEMP TABLE -----" << endl;
+        cout << endl << MSG_TEMP_TABLE << endl;
         printTable(tempTable);
 
-        cout << endl << "----- TEMP HAND (Player " << playerNumber << ") -----" << endl;
+        cout << endl << MSG_TEMP_HAND_PREFIX << playerNumber << MSG_TEMP_HAND_SUFFIX << endl;
         printHandWithIndexes(tempPlayer);
 
         cout << endl;
-        cout << "1) Play a NEW combination (from hand)" << endl;
-        cout << "2) Add tile(s) to an existing combination (from hand)" << endl;
-        cout << "3) Steal a tile and use it (same action)" << endl;
-        cout << "4) Finish rearrange (commit if valid)" << endl;
-        cout << "5) Cancel rearrange (rollback)" << endl;
-        cout << "Choose: ";
+        cout << MSG_REARRANGE_MENU_PLAY_NEW << endl;
+        cout << MSG_REARRANGE_MENU_EXTEND << endl;
+        cout << MSG_REARRANGE_MENU_STEAL << endl;
+        cout << MSG_REARRANGE_MENU_FINISH << endl;
+        cout << MSG_REARRANGE_MENU_CANCEL << endl;
+        cout << MSG_CHOOSE_PROMPT;
 
         int choice;
-        cin >> choice;
-
-        if (cin.fail())
+        if (!readInt(choice))
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Invalid input. Rearrange cancelled." << endl;
+            cout << MSG_REARRANGE_INVALID_INPUT_CANCELLED << endl;
             return false;
         }
 
-        if (choice == 5)
+        if (choice == REARRANGE_CANCEL_ROLLBACK)
         {
-            cout << "Rearrange cancelled. Rollback." << endl;
+            cout << MSG_REARRANGE_CANCELLED_ROLLBACK << endl;
             return false;
         }
 
-        if (choice == 4)
+        if (choice == REARRANGE_FINISH_COMMIT)
         {
             removeEmptyCombinations(tempTable);
 
             if (!didSomething)
             {
-                cout << "You didn't change anything. Rearrange not applied." << endl;
+                cout << MSG_REARRANGE_DID_NOT_CHANGE << endl;
                 return false;
             }
 
             if (!isTableValid(tempTable))
             {
-                cout << "Final table is NOT valid. Rearrange cancelled (rollback)." << endl;
+                cout << MSG_REARRANGE_FINAL_TABLE_INVALID << endl;
                 return false;
             }
 
             player = tempPlayer;
             table = tempTable;
 
-            cout << "Rearrange committed successfully!" << endl;
+            cout << MSG_REARRANGE_COMMITTED << endl;
             return true;
         }
 
         bool stepSuccess = false;
 
-        if (choice == 1)
+        if (choice == REARRANGE_PLAY_NEW)
         {
             stepSuccess = tryPlayNewCombination(tempPlayer, tempTable, playerNumber);
         }
-        else if (choice == 2)
+        else if (choice == REARRANGE_EXTEND_EXISTING)
         {
             stepSuccess = tryAddTileToExistingCombination(tempPlayer, tempTable, playerNumber);
         }
-        else if (choice == 3)
+        else if (choice == REARRANGE_STEAL_AND_USE)
         {
             stepSuccess = tryStealAndUseTile(tempPlayer, tempTable, playerNumber);
         }
         else
         {
-            cout << "Invalid choice." << endl;
+            cout << MSG_INVALID_CHOICE << endl;
             stepSuccess = false;
         }
 
@@ -1702,7 +1820,7 @@ bool tryRearrangeTurn(Player& player, Table& table, int playerNumber)
         }
         else
         {
-            cout << "This action failed. You can try another action, or finish/cancel." << endl;
+            cout << MSG_ACTION_FAILED_TRY_AGAIN << endl;
         }
     }
 }
@@ -1711,15 +1829,39 @@ const char* ansiColor(Color c)
 {
     switch (c)
     {
-        case ORANGE: return "\033[93m";
-        case RED:    return "\033[91m";
-        case BLUE:   return "\033[94m";
-        case BLACK:  return "\033[90m";
+        case ORANGE: return ANSI_COLOR_ORANGE;
+        case RED:    return ANSI_COLOR_RED;
+        case BLUE:   return ANSI_COLOR_BLUE;
+        case BLACK:  return ANSI_COLOR_BLACK;
     }
-    return "\033[0m";
+    return ANSI_RESET;
 }
 
 const char* ansiReset()
 {
-    return "\033[0m";
+    return ANSI_RESET;
+}
+
+bool readInt(int& x)
+{
+    cin >> x;
+
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(CIN_IGNORE_LIMIT, '\n');
+        cout << MSG_INVALID_INPUT << endl;
+        return false;
+    }
+
+    return true;
+}
+
+void rollbackCombination(Combination& target, const Combination& backup, Player& player, Tile* returned, int count)
+{
+    target = backup;
+    for (int i = 0; i < count; i++) 
+    {
+        addToHandEnd(player, returned[i]);
+    }  
 }
